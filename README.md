@@ -37,7 +37,7 @@ Between each statement is the following safety check: `if(--bank<0){printf("Bank
 
 An assertion is an inequality or equality with special variables $0 to $1023 which refer
 to the cells of `arr`. For example, `=(4*$5 - 1 <= $99/2)` translates to
-`bank+=10;if(!(4*arr[5] - 1 <= arr[99]/2)){...}`.
+`bank+=11;if(!(4*arr[5] - 1 <= arr[99]/2)){...}`.
 
 ## Usage
 
