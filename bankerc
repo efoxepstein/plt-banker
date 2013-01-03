@@ -1,0 +1,75 @@
+#!/usr/bin/env ruby
+filename = ARGV[0]
+shortname = filename.split(".")[0]
+
+code = File.read filename
+
+c = <<-EOS
+#include <stdio.h>
+#include <stdlib.h>
+#define CHECK do{if(--bank<0){printf("Bank underflow error!\\n");exit(2);}}while(0)
+#define ASSERT(A) do{bank+=11;if(!(A)){printf("Failed assertion!\\n");exit(1);}}while(0)
+int main(void) {
+  char arr[1024], *p = arr;
+  for(int i = 0; i < 1024; ++i) arr[i] = 0;
+  int bank = 0;
+EOS
+
+TR = {
+
+}
+
+i = 0
+@while_depth = 1
+
+def spaces
+  '  '*@while_depth
+end
+
+while i < code.size
+  while_delta = 0
+  translation = case code[i]
+    when '>' then '++p;'
+    when '<' then '--p;'
+    when '+' then '++*p;'
+    when '-' then '--*p;'
+    when '.' then 'putchar(*p);'
+    when ',' then '*p=getchar();'
+    when '['
+      while_delta = 1 
+      'while(*p){'
+    when ']'
+      whlie_delta = -1     
+      '}'
+    when '='
+      j = i+1
+      count = 1
+      raise 'Syntax Error', c unless code[j] == '('
+      while count > 0
+        j += 1
+        case code[j]
+          when '(' then count += 1
+          when ')' then count -= 1
+        end
+      end
+      assertion = code[i+1..j].gsub(/\$([\d]+)/, 'arr[\1]')
+      i = j
+      "ASSERT(#{assertion});"
+    else nil
+  end
+
+  if translation
+    @while_depth -= 1 if while_delta < 0
+    c << spaces << translation
+    @while_depth += 1 if while_delta > 0
+    c << "\n" << spaces << "CHECK;\n"
+  end
+
+  i += 1
+end
+
+File.open('%s.c' % shortname, 'w') do |f|
+  f << c << "\n}\n"
+end
+
+`cc -std=c99 -O3 -o #{shortname} #{shortname}.c`
