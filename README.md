@@ -7,7 +7,9 @@ This ensures that even novice programmers can quickly pick up the language
   and begin producing stellar applications.
 
 In order to make sure that such programmers write safe code, all statements
-are charged to a bank.
+are charged to a bank. If the bank is empty, the program exits. The bank
+can be filled up by executing assertions. Therefore, in order to write
+anything, one must have one assertion per every ten other statements executed.
 
 ## Syntax and Semantics
 
